@@ -1,14 +1,12 @@
-import torch.nn as nn
-import torch as th
-import core as thlp
 import torch.nn.init as INIT
 import math
 
+from .core import *
 
 NO_ELEMENT=-1
 
 
-class Categorical(thlp.CategoricalProbModule):
+class Categorical(CategoricalProbModule):
 
     # model distribution of type P(S_L+1 | s_1, ..., s_L). L can be = 1
     def __init__(self, h_size, num_labels, num_vars=1, alpha=1.):
@@ -25,7 +23,7 @@ class Categorical(thlp.CategoricalProbModule):
         assert len(p_hidden) == self.num_vars
         out = self.p.unsqueeze(0)
         for i, h in enumerate(p_hidden):
-            out = thlp.sum_over(thlp.mul(h.view(*(list(h.shape) + [1]*(self.num_vars-i))), out), 1)
+            out = sum_over(mul(h.view(*(list(h.shape) + [1]*(self.num_vars-i))), out), 1)
 
         return out
 
@@ -41,7 +39,7 @@ class Categorical(thlp.CategoricalProbModule):
             self.p.grad.index_add_(-1, visible[vis_mask], posterior[vis_mask, :].permute(list(range(1, posterior.ndim))+[0]).exp())
 
 
-class Normal(thlp.ProbModule):
+class Normal(ProbModule):
 
     def __init__(self, h_size, out_size):
         super(Normal, self).__init__()
@@ -69,7 +67,7 @@ class Normal(thlp.ProbModule):
         self.all_visibles = []
         self.all_posteriors = []
 
-        self.m_step_denom.fill_(thlp.EPS)
+        self.m_step_denom.fill_(EPS)
 
     def forward(self, p_hidden):
         raise NotImplementedError('Cannot sample from normal emission!')
