@@ -1,9 +1,11 @@
 import torch.nn as nn
 import torch as th
-import models.prob.th_logprob as thlp
-from exputils.datasets import ConstValues
+import core as thlp
 import torch.nn.init as INIT
 import math
+
+
+NO_ELEMENT=-1
 
 
 class Categorical(thlp.CategoricalProbModule):
@@ -28,14 +30,14 @@ class Categorical(thlp.CategoricalProbModule):
         return out
 
     def set_evidence(self, visible: th.Tensor):
-        vis_mask = (visible != ConstValues.NO_ELEMENT)
+        vis_mask = (visible != NO_ELEMENT)
         idx = (visible * vis_mask).long().view([1]*self.num_vars + [-1]).expand(list(self.p.shape[:-1])+[-1])
         return th.gather(self.p, -1, idx).permute([-1] + list(range(self.p.ndim-1))) * vis_mask.view([-1] + [1]*self.num_vars)
         #return th.index_select(self.p, -1, (visible * vis_mask).long()).permute([-1] + list(range(self.p.ndim-1))) * vis_mask.view(-1, 1)
 
     def accumulate_posterior(self, posterior, visible):
         if self.training:
-            vis_mask = visible != ConstValues.NO_ELEMENT
+            vis_mask = visible != NO_ELEMENT
             self.p.grad.index_add_(-1, visible[vis_mask], posterior[vis_mask, :].permute(list(range(1, posterior.ndim))+[0]).exp())
 
 
