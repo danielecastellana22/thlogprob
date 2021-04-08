@@ -7,7 +7,7 @@ import numpy as np
 
 
 EPS = 10**-44
-LOG_EPS = -100  # log(EPS) = LOG_EPS
+LOG_EPS = -100.0  # log(EPS) = LOG_EPS
 
 
 def mul(a, b):
